@@ -293,18 +293,20 @@
     }
 
     // Order form submit
-    function submitOrder() {
-      const name = document.getElementById('customerName').value.trim();
-      const delivery = document.getElementById('deliveryOption').value;
-      const address = document.getElementById('deliveryAddress').value.trim();
-      const payment = document.getElementById('paymentMethod').value;
-      const gcashNum = document.getElementById('GCashNumber').value.trim();
-      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  function submitOrder() {
+  const name = document.getElementById('customerName').value.trim();
+  const delivery = document.getElementById('deliveryOption').value;
+  const address = document.getElementById('deliveryAddress').value.trim();
+  const payment = document.getElementById('paymentMethod').value;
+  const gcashNum = document.getElementById('GCashNumber').value.trim();
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-      if (!name) return alert('Please enter your name.');
-      if (delivery === 'delivery' && !address) return alert('Please enter a delivery address.');
-if (payment === 'gcash' && !gcashNum) return alert('Please enter your GCash number.');
+  if (!name) return alert('Please enter your name.');
+  if (delivery === 'delivery' && !address) return alert('Please enter a delivery address.');
+  if (payment === 'gcash' && !gcashNum) return alert('Please enter your GCash number.');
+
   const orderData = {
+    orderId: Date.now(), // unique ID based on timestamp
     customerName: name,
     items: cart,
     total,
@@ -314,26 +316,16 @@ if (payment === 'gcash' && !gcashNum) return alert('Please enter your GCash numb
     gcashNumber: payment === 'gcash' ? gcashNum : null
   };
 
-  fetch('/api/submit-order', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(orderData),
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.error) {
-      alert('Failed to submit order');
-    } else {
-      alert('Order submitted successfully!');
-      cart.length = 0;
-      renderCart();
-      closeForm();
-    }
-  })
-  .catch(err => {
-    console.error('Error:', err);
-    alert('Something went wrong');
-  });
+  // Get existing orders from localStorage
+  const existingOrders = JSON.parse(localStorage.getItem('orders')) || [];
+  existingOrders.push(orderData);
+  localStorage.setItem('orders', JSON.stringify(existingOrders));
+
+  alert(`Order placed successfully! Order ID: ${orderData.orderId}`);
+  cart.length = 0;
+  renderCart();
+  closeForm();
+  toggleCart();
 }
 
 // Toggle cart visibility
